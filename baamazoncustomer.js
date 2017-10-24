@@ -36,10 +36,10 @@ function displayInventory() {
                 response[i].department_name,
                 response[i].price,
                 response[i].stockquantity
-            ])
+            ]);
         }
         console.log(ProductsTable.toString());
-        
+        ProductsTable.length = 0;
         Inquirer(response);
         
     });
@@ -63,7 +63,8 @@ function Inquirer() {
         }
     ]).then(function (answer) {
         if(answer.product_id === "q"){
-            connection.end()
+            process.exit();
+            connection.end();
         }else{
         connection.query('SELECT stockquantity, product_name, price FROM Product WHERE ?', {
             item_id: answer.product_id
@@ -75,15 +76,14 @@ function Inquirer() {
             } else {
                 console.log('You have purchased ' + answer.item_count + ' items called ' + res[0].product_name);
                 console.log('Your total for this purchase is $' + res[0].price * answer.item_count);
-                console.log(beautify(res[0].stockquantity));
-                console.log(beautify(answer.item_count));
+                //console.log(beautify(res[0].stockquantity));
+                //console.log(beautify(answer.item_count));
                 var difference = res[0].stockquantity - answer.item_count;
-                console.log(difference);
+                //console.log(difference);
                 connection.query('UPDATE product SET stockquantity = ' + difference.toString() + ' WHERE ?', {
                     item_id: answer.product_id
-                }, function (e, r) {if(err) throw err;console.log(response)});
-                displayInventory();
-                continueShopping();
+                }, function (e, r) {if(err) throw err;continueShopping();});
+                // displayInventory();
                 
             }
         })
@@ -92,7 +92,6 @@ function Inquirer() {
 }
 
 function continueShopping() {
-
     inquirer.prompt([
         {
             name: 'continue',
@@ -103,8 +102,7 @@ function continueShopping() {
         ]).then(function (answer) {
 
         if (answer.continue == 'y') {
-
-            establishSQLConnection();
+            displayInventory();
         } else {
             connection.end();
             return;
