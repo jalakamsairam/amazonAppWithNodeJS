@@ -20,6 +20,7 @@
     "cli-table": "^0.3.1",
     "inquirer": "^3.3.0",
     "jshint": "^2.9.5",
+    "json-beautify": "^1.0.1",
     "mysql": "^2.15.0",
     "tty-table": "^2.5.5"
   }
