@@ -15,7 +15,7 @@ var connection = mysql.createConnection({
 	database: "bamazon"
 });
 
-connection.connect(function(err) {
+connection.connect(function (err) {
 	if (err) throw err;
 	start();
 });
@@ -28,10 +28,12 @@ connection.connect(function(err) {
 var Table = require('cli-table');
 
 var ProductsTable = new Table({
-    head: ['ID', 'Product', 'Department', 'Price', 'Stock', 'Default']
-  , colWidths: [4, 70, 13, 7, 7, 9]
-  , style: { 'padding-right': 0 }
-  , colAligns: []
+	head: ['ID', 'Product', 'Department', 'Price', 'Stock'],
+	colWidths: [4, 70, 13, 7, 7],
+	style: {
+		'padding-right': 0
+	},
+	colAligns: []
 });
 
 
@@ -53,19 +55,22 @@ function start() {
 			'Add New Product',
 			'Quit'
 		]
-	}).then(function(answer) {
+	}).then(function (answer) {
 
-		switch(answer.manager_menu_choice) {
+		switch (answer.manager_menu_choice) {
 			case 'View Products for Sale':
 				viewInventory();
 				break;
 			case 'View Low Inventory':
+				// viewInventory();
 				viewLowInventory();
 				break;
 			case 'Add to Inventory':
+				// viewInventory();
 				addToInventory();
 				break;
 			case 'Add New Product':
+				// viewInventory();
 				addNewProduct();
 				break;
 			case 'Quit':
@@ -84,9 +89,9 @@ function start() {
 
 function viewInventory() {
 
-	var query = 'SELECT item_id, product_name, department_name, price, stockquantity,  FROM product';
+	var query = 'SELECT * FROM product';
 
-	connection.query(query, function(err, res) {
+	connection.query(query, function (err, res) {
 
 		for (var i = 0; i < res.length; i++) {
 
@@ -95,14 +100,14 @@ function viewInventory() {
 				res[i].product_name,
 				res[i].department_name,
 				res[i].price,
-				res[i].StockQuantity
+				res[i].stockquantity		
 			]);
 
 		}
 
 		console.log(ProductsTable.toString());
 
-		ProductsTable.length = 0;
+		// ProductsTable.length = 0;
 
 		start();
 
@@ -121,18 +126,24 @@ function addToInventory() {
 			message: "What product(s) would you like to update? Please enter ItemID(s): "
 		}
 
-	]).then(function(answer) {
+	]).then(function (answer) {
 
-		connection.query('SELECT stockquantity, product_name FROM product WHERE ?', {item_id: answer.id}, function(err, res) {
+		connection.query('SELECT stockquantity, product_name FROM product WHERE ?', {
+			item_id: answer.id
+		}, function (err, res) {
 
-			if(res[0].stockquantity < defaultquantity) {
+			if (res[0].stockquantity < defaultquantity) {
 
-				connection.query('UPDATE product SET stockquantity =' +defaultquantity+'WHERE ?', {item_id: answer.id}, function(e, r){});
+				connection.query('UPDATE product SET stockquantity =' + defaultquantity + 'WHERE ?', {
+					item_id: answer.id
+				}, function (e, r) {});
 
 				console.log('Update successful!');
 
-				connection.query('SELECT * FROM product WHERE ?', {item_id: answer.id}, function(e, r){
-					console.log('Quantity of '+res[0].item_id+' = '+r[0].stockquantity);
+				connection.query('SELECT * FROM product WHERE ?', {
+					item_id: answer.id
+				}, function (e, r) {
+					console.log('Quantity of ' + res[0].item_id + ' = ' + r[0].stockquantity);
 				});
 
 			} else {
@@ -150,7 +161,7 @@ function addToInventory() {
 
 function viewLowInventory() {
 
-	connection.query('SELECT item_id, stockquantity, product_name, price, department_name FROM product WHERE stockquantity >= 200', function(err, res) {
+	connection.query('SELECT item_id, stockquantity, product_name, price, department_name FROM product WHERE stockquantity <= 6', function (err, res) {
 
 		for (var i = 0; i < res.length; i++) {
 
@@ -174,30 +185,32 @@ function viewLowInventory() {
 
 
 function addNewProduct() {
-inquirer.prompt([
-    {
-        name:"productName",
-        message:"enter the productname"
-    },
-    {
-        name:"departmentName",
-        message:"enter the departmentname"
-    },
-    {
-        name:"prices",
-        message:"enter the price"
-    },
-    {
-        name:"stockQuantity",
-        message:"what is the stock quantity you want ?"
-    }
-]).then((answer)=>{
-    var prodName = answer.productname;
-    var depName = answer.departmentname;
-    var pric = answer.prices;
-    var stockquan = answer.StockQuantity;
-   var insertionquery = "insert into product(product_name,department_name,price,stockquantity)values?",[prodName,depName,pric,stockquan], function(error,response{
+	inquirer.prompt([{
+			name: "productName",
+			message: "enter the productname"
+		},
+		{
+			name: "departmentName",
+			message: "enter the departmentname"
+		},
+		{
+			name: "prices",
+			message: "enter the price"
+		},
+		{
+			name: "stockQuantity",
+			message: "what is the stock quantity you want ?"
+		}
+	]).then((answer) => {
+		var prodName = answer.productname;
+		var depName = answer.departmentname;
+		var pric = answer.prices;
+		var stockquan = answer.StockQuantity;
+		connection.query("insert into product(product_name,department_name,price,stockquantity)values(?,?,?,?)", [prodName, depName, pric, stockquan], function (error, response) {
+			if (error) throw error;
+			console.log(response);
 
-   })
-})
+		})
+	})
+	// start();
 }
